@@ -1,0 +1,11 @@
+[package]
+name = "charity_project_v3"
+version = "0.0.1"
+edition = "2024.beta"
+
+[dependencies]
+Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "testnet" }
+
+[addresses]
+# Sửa tên này cho giống với khai báo module trong file .move
+charity_project_v3 = "0x0"

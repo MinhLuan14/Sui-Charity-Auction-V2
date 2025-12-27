@@ -1,0 +1,20 @@
+# Thư viện (Nặng, không cần đẩy lên)
+node_modules/
+**/node_modules/
+
+# File bảo mật và cấu hình cá nhân
+.env
+*.env
+Pinata_JWT.env
+.env.local
+
+# Thư mục sau khi build code
+dist/
+build/
+out/
+
+# File rác của hệ thống
+.DS_Store
+Thumbs.db
+*.log
+Pinata_JWT.env

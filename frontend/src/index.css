@@ -1,0 +1,136 @@
+@import "tailwindcss";
+
+/* Định nghĩa màu sắc và biến thủ công */
+@theme {
+  --color-sui-dark: #050b15;
+  --color-sui-primary: #0066ff;
+  --color-sui-cyan: #00d1ff;
+  
+  /* Thêm các animation tùy chỉnh vào theme */
+  --animate-shimmer: shimmer 2s infinite linear;
+  --animate-spin-slow: spin 10s linear infinite;
+}
+
+:root {
+  background-color: #00020a; /* Đậm hơn một chút để nổi bật hạt */
+  color: white;
+}
+
+body {
+  margin: 0;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  overflow-x: hidden;
+}
+
+/* --- GLASSMORPHISM & NEON UTILITIES --- */
+
+@utility glass-card {
+  background-color: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 2rem;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+}
+
+/* Viền neon rực rỡ cho các khối Card */
+@utility neon-border {
+  border: 1px solid rgba(59, 130, 246, 0.5);
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.2), inset 0 0 10px rgba(59, 130, 246, 0.1);
+}
+
+/* --- ANIMATIONS --- */
+
+@keyframes border-flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.5; filter: blur(100px); }
+  50% { opacity: 0.8; filter: blur(130px); }
+}
+
+/* --- CUSTOM CLASSES --- */
+
+.animate-border-flow {
+  background-size: 200% 200%;
+  animation: border-flow 4s linear infinite;
+}
+
+/* Lớp phủ sáng cho nền (Ambient Lights) */
+.ambient-glow {
+  position: absolute;
+  width: 60vw;
+  height: 60vw;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 102, 255, 0.15) 0%, transparent 70%);
+  filter: blur(100px);
+  z-index: -1;
+  animation: pulse-glow 10s ease-in-out infinite;
+}
+
+/* Hiệu ứng tia sáng quét qua nút (Dùng cho Button Connect) */
+.shimmer-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer-effect::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  animation: shimmer 3s infinite;
+}
+/* Ghi đè trực tiếp vào các biến của thư viện Dapp Kit */
+:root {
+  --font-sans: 'Inter', system-ui, sans-serif;
+}
+
+/* Tấn công vào các thuộc tính cụ thể của Button */
+.w-dapp-kit-connect-button {
+  background-color: #050b18 !important; /* Màu nền tối của bạn */
+  color: #00D1FF !important; /* Màu xanh Sui */
+  border: 1px solid rgba(0, 209, 255, 0.3) !important;
+  border-radius: 12px !important;
+  font-weight: 900 !important;
+  text-transform: uppercase !important;
+  font-size: 10px !important;
+  letter-spacing: 0.1em !important;
+  box-shadow: none !important; /* Bỏ cái bóng trắng mặc định */
+}
+
+/* Fix lỗi khi nút đã kết nối thường bị chuyển sang màu trắng/xám */
+.w-dapp-kit-connect-button[data-connected="true"] {
+  background-color: #050b18 !important;
+  color: #00D1FF !important;
+}
+
+/* Khi di chuột vào nút */
+.w-dapp-kit-connect-button:hover {
+  background-color: rgba(0, 209, 255, 0.1) !important;
+  border-color: #00D1FF !important;
+  cursor: pointer !important;
+}
+
+/* Đảm bảo text bên trong nút (địa chỉ ví) cũng màu xanh */
+.w-dapp-kit-connect-button * {
+  color: #00D1FF !important;
+}
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #06b6d4; border-radius: 10px; }

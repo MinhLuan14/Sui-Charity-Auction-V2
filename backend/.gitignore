@@ -1,0 +1,30 @@
+# 1. Thư viện phụ thuộc (Rất nặng, không được đẩy lên)
+node_modules/
+jspm_packages/
+
+# 2. Biến môi trường (CHỨA KEY BÍ MẬT - CẤM ĐẨY LÊN)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# 3. Các tệp log (Ghi lại lỗi khi chạy máy local)
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+*.log
+
+# 4. Thư mục build/output (Nếu bạn dùng TypeScript)
+dist/
+build/
+out/
+
+# 5. Tệp cấu hình của hệ điều hành và IDE
+.DS_Store
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj

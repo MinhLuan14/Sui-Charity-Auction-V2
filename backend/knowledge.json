@@ -1,0 +1,36 @@
+{
+    "projectName": "Sui Charity Auction",
+    "mission": "Nền tảng đấu giá NFT thiện nguyện minh bạch trên Sui Blockchain. Mục tiêu gây quỹ mổ tim cho trẻ em và xây trường học vùng cao.",
+    "rules": {
+        "startingBid": "5-20 SUI (Vật phẩm thường), 50-200 SUI (Tác phẩm nghệ thuật), >500 SUI (Vật phẩm hiếm/đặc biệt).",
+        "network": "Sui Network (Layer 1)",
+        "transparency": "Giao dịch qua Smart Contract, theo dõi trực tiếp trên Sui Explorer."
+    },
+    "authentication": {
+        "isOriginal": "NFT chính chủ phải do ví Admin của Sui Charity đúc (Mint).",
+        "checkFake": "Cảnh báo người dùng kiểm tra Collection ID và lịch sử ví Donor trước khi đặt giá.",
+        "verifiedTag": "Chỉ những NFT có dấu tích xanh xác minh trên nền tảng mới là hàng thật."
+    },
+    "biddingStrategy": {
+        "outbidAdvice": "Nếu giá hiện tại chưa vượt quá 150% giá đề xuất, việc nâng giá (Bid) là hợp lý để ủng hộ cộng đồng.",
+        "emotionalValue": "Mỗi bước giá tăng thêm là một đóng góp trực tiếp cho trẻ em nghèo, giá trị tinh thần vượt xa con số hiển thị."
+    },
+    "historicalData": [
+        {
+            "itemType": "Tranh vẽ tay",
+            "soldPrice": "120 SUI",
+            "cause": "Hỗ trợ 2 ca mổ tim thành công",
+            "appraisalScore": "9.5/10"
+        },
+        {
+            "itemType": "Vật phẩm kỷ niệm",
+            "soldPrice": "45 SUI",
+            "cause": "Tặng quà Tết cho 50 hộ nghèo",
+            "appraisalScore": "8.0/10"
+        }
+    ],
+    "faq": {
+        "howToJoin": "Kết nối Sui Wallet (Suiet, Martian...), chọn vật phẩm và đặt mức giá cao hơn người trước tối thiểu 5%.",
+        "failedBid": "Nếu bạn không thắng, tiền sẽ được Smart Contract trả về ví tự động ngay lập tức."
+    }
+}
