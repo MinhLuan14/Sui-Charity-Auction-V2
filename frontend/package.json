@@ -13,12 +13,15 @@
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
-    "@mysten/dapp-kit": "^0.19.11",
-    "@mysten/sui": "^1.45.2",
+    "@mysten/dapp-kit": "^0.14.0",
+    "@mysten/enoki": "^0.13.0",
+    "@mysten/sui": "^1.21.0",
+    "@mysten/sui.js": "^0.54.1",
     "@tailwindcss/postcss": "^4.1.18",
-    "@tanstack/react-query": "^5.90.12",
+    "@tanstack/react-query": "^5.90.14",
     "@vitejs/plugin-basic-ssl": "^2.1.0",
     "canvas-confetti": "^1.9.4",
+    "clsx": "^2.1.1",
     "framer-motion": "^12.23.26",
     "lucide-react": "^0.562.0",
     "react": "^19.2.0",
@@ -26,7 +29,8 @@
     "react-draggable": "^4.5.0",
     "react-hot-toast": "^2.6.0",
     "react-modal": "^3.16.3",
-    "react-router-dom": "^7.11.0"
+    "react-router-dom": "^7.11.0",
+    "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

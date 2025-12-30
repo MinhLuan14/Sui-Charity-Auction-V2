@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const Groq = require('groq-sdk');
+const axios = require('axios');
+const pdf = require('pdf-parse');
 require('dotenv').config();
 
 const app = express();
@@ -8,7 +10,9 @@ const app = express();
 // --- CẤU HÌNH ---
 app.use(cors());
 app.use(express.json());
-
+app.get('/', (req, res) => {
+    res.status(200).send("✅ SUI CHARITY AI BACKEND IS LIVE 💙");
+});
 // Kiểm tra API Key
 if (!process.env.GROQ_API_KEY) {
     console.error("❌ LỖI: Thiếu GROQ_API_KEY trong file .env");
@@ -74,15 +78,26 @@ Phong cách trả lời:
 - Nhấn mạnh tính minh bạch, an toàn và giá trị tinh thần.
 - Khuyến khích kiểm tra giao dịch trên Sui Explorer và xác thực NFT.
 - Không hứa hẹn lợi nhuận tài chính, chỉ tập trung vào giá trị thiện nguyện.
+- Nhắc nhẹ về tính minh bạch của Blockchain Sui Network.
+- Nhấn mạnh rằng 100% số tiền đấu giá sẽ được Smart Contract chuyển thẳng đến quỹ.
 
 Hãy trả lời ngắn gọn, dễ hiểu, và luôn kết thúc bằng lời mời tương tác để giữ cuộc trò chuyện tiếp diễn.
 `;
+// === [MỚI] SYSTEM PROMPT CHO KIỂM ĐỊNH HỒ SƠ ===
+const SYSTEM_PROMPT_AUDIT = `
+Bạn là một kiểm toán viên cao cấp của hệ thống Sui Charity.
+Nhiệm vụ: Đọc văn bản trích xuất từ hồ sơ PDF và đối chiếu với tên quỹ đăng ký.
+Tiêu chí chấm điểm (Score):
+- 100%: Tên quỹ trong hồ sơ khớp hoàn toàn với tên đăng ký.
+- 70-90%: Tên quỹ khớp một phần hoặc hồ sơ có dấu mộc/thông tin hợp lệ.
+- <50%: Hồ sơ không liên quan hoặc văn bản trống.
 
+YÊU CẦU: Luôn trả về JSON format chuẩn.
+`;
 // --- ROUTE KIỂM TRA ---
 app.get('/', (req, res) => {
     res.status(200).send("✅ SUI CHARITY AUCTION AI BACKEND ĐANG HOẠT ĐỘNG BÌNH THƯỜNG 💙");
 });
-
 // 1. ENDPOINT CHATBOT CHÍNH
 app.post('/api/chat', async (req, res) => {
     try {
@@ -157,12 +172,74 @@ Yêu cầu:
         res.status(500).json({ error: "Không thể tạo mô tả lúc này." });
     }
 });
+// === 3. [THÊM MỚI] ENDPOINT XÁC THỰC HỒ SƠ ĐĂNG KÝ ===
+app.post('/api/verify-charity', async (req, res) => { // Đã xóa chữ 'a' dư
+    try {
+        const { ipfsHash, charityName } = req.body;
+        if (!ipfsHash) return res.status(400).json({ error: "Thiếu IPFS Hash" });
 
+        const ipfsUrl = `https://gateway.pinata.cloud/ipfs/${ipfsHash}`;
+        console.log(`📡 Đang kết nối IPFS: ${ipfsUrl}`);
+
+        let documentText = "";
+        try {
+            // 1. Tải file PDF từ IPFS
+            const ipfsRes = await axios.get(ipfsUrl, {
+                responseType: 'arraybuffer', // Giữ nguyên để lấy dữ liệu thô
+                timeout: 20000
+            });
+
+            // 2. Trích xuất text từ Buffer
+            // Dùng trực tiếp hàm pdf() - thư viện này trả về Promise
+            const data = await pdf(Buffer.from(ipfsRes.data));
+            documentText = data.text;
+
+            console.log("📄 Đã trích xuất văn bản từ PDF thành công.");
+        } catch (e) {
+            console.error("❌ Lỗi xử lý file PDF:", e.message);
+            // Fallback: Nếu không đọc được PDF, gửi thông báo lỗi chi tiết
+            return res.status(500).json({
+                error: "Lỗi trích xuất PDF",
+                score: 0,
+                summary: "Hệ thống không thể đọc nội dung file PDF. Vui lòng kiểm tra định dạng file trên IPFS."
+            });
+        }
+
+        // 3. Gửi cho Groq AI để đối soát
+        const completion = await groq.chat.completions.create({
+            messages: [
+                {
+                    role: "system",
+                    content: "Bạn là chuyên gia thẩm định hồ sơ pháp lý. Chỉ trả về kết quả định dạng JSON: { \"is_valid\": boolean, \"score\": number, \"summary\": \"string\", \"reason\": \"string\" }"
+                },
+                {
+                    role: "user",
+                    content: `Đối soát tên Quỹ: "${charityName}" với nội dung hồ sơ PDF này: ${documentText.substring(0, 4000)}`
+                }
+            ],
+            model: "llama-3.3-70b-versatile",
+            response_format: { type: "json_object" }
+        });
+
+        const result = JSON.parse(completion.choices[0].message.content);
+        console.log(`✅ AI Audit thành công: ${charityName} - Score: ${result.score}`);
+        res.json(result);
+
+    } catch (error) {
+        console.error("❌ Lỗi tổng thể:", error.message);
+        res.status(500).json({
+            error: "AI Audit thất bại",
+            score: 0,
+            summary: "Lỗi kết nối AI hoặc xử lý dữ liệu."
+        });
+    }
+});
 // --- KHỞI ĐỘNG SERVER ---
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`\n💙 ============================================`);
     console.log(`🚀 SUI CHARITY AUCTION AI SERVER ĐÃ KHỞI ĐỘNG`);
+    console.log(`✅ Tính năng: Chatbot, Viết mô tả, Xác thực hồ sơ`);
     console.log(`✅ Đang lắng nghe tại: http://localhost:${PORT}`);
     console.log(`💙 ============================================\n`);
 });

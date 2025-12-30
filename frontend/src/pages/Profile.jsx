@@ -1,471 +1,276 @@
 import React, { useState, useEffect } from 'react';
-
 import { useSuiClient, useCurrentAccount } from '@mysten/dapp-kit';
-
 import { motion, AnimatePresence } from 'framer-motion';
-
-import { Wallet, Heart, Zap, ShieldCheck, ImageOff, PackagePlus, Loader2, ExternalLink, Activity } from 'lucide-react';
-
+import {
+    Wallet, Heart, Zap, ShieldCheck, ImageOff,
+    PackagePlus, Loader2, ExternalLink, Activity
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { PACKAGE_ID, MODULE_NAME } from '../constants';
 
+// --- HELPERS ---
+const getIPFSUrl = (url) => {
+    if (!url || typeof url !== 'string') return "https://placehold.jp/24/F8F9FA/1F2937/400x400.png?text=No+Image";
+    const cid = url.replace("ipfs://", "").trim();
+    return cid.startsWith('http') ? cid : `https://gateway.pinata.cloud/ipfs/${cid}`;
+};
 
-
-const PACKAGE_ID = "0x5e4414f266147c07b0b15ded6239606c78333628b4fe251b1dbaa7600c637675";
-
-
+const parseSuiString = (data) => {
+    if (!data) return "";
+    if (typeof data === 'object' && data.bytes) return new TextDecoder().decode(new Uint8Array(data.bytes));
+    return String(data);
+};
 
 export default function Profile() {
-
     const client = useSuiClient();
-
     const currentAccount = useCurrentAccount();
 
-
-
     const [activeTab, setActiveTab] = useState('bidding');
-
     const [myNFTs, setMyNFTs] = useState([]);
-
     const [activeBids, setActiveBids] = useState([]);
-
     const [createdAuctions, setCreatedAuctions] = useState([]);
-
     const [loading, setLoading] = useState(true);
-
-    const [stats, setStats] = useState({ totalDonated: 0, itemsWon: 0, balance: "0" });
-
-
-
-    // --- HELPERS (GIỮ NGUYÊN LOGIC) ---
-
-    const getIPFSUrl = (url) => {
-
-        if (!url || typeof url !== 'string') return "https://placehold.jp/24/0a1120/ffffff/400x400.png?text=No+Image";
-
-        const parts = url.split('/');
-
-        const cid = parts[parts.length - 1].trim();
-
-        return cid ? `https://gateway.pinata.cloud/ipfs/${cid}` : "https://placehold.jp/24/0a1120/ffffff/400x400.png?text=Invalid+CID";
-
-    };
-
-
-
-    const extractNFTData = (obj) => {
-
-        const fields = obj.data?.content?.fields;
-
-        if (!fields) return null;
-
-        const nft = fields.nft?.fields?.contents?.fields || fields.nft?.fields || fields.nft;
-
-        const rawImage = nft?.image_url || nft?.url || nft?.metadata || obj.data?.display?.data?.image_url;
-
-
-
-        return {
-
-            id: obj.data.objectId,
-
-            name: (nft?.name || "Unnamed").split('|')[0].trim(),
-
-            currentBid: (Number(fields.highest_bid || 0) / 1e9).toFixed(2),
-
-            image: getIPFSUrl(rawImage),
-
-            status: fields.status === true ? "LIVE" : "ENDED",
-
-            seller: fields.seller || fields.creator,
-
-            highest_bidder: fields.highest_bidder
-
-        };
-
-    };
-
-
+    const [balance, setBalance] = useState("0.00");
 
     const fetchProfileData = async () => {
-
-        if (!currentAccount) return;
+        if (!currentAccount?.address) return;
 
         try {
-
             setLoading(true);
 
-            const balance = await client.getBalance({ owner: currentAccount.address });
+            // 1. Fetch Wallet Balance
+            const bal = await client.getBalance({ owner: currentAccount.address });
+            setBalance((Number(bal.totalBalance) / 1e9).toFixed(3));
 
-            const suiBalance = (Number(balance.totalBalance) / 1e9).toFixed(3);
-
-
-
+            // 2. Fetch Auctions
+            const eventType = `${PACKAGE_ID}::${MODULE_NAME}::AuctionCreated`;
             const events = await client.queryEvents({
-
-                query: { MoveEventType: `${PACKAGE_ID}::charity_auction::AuctionCreated` }
-
+                query: { MoveEventType: eventType }
             });
-
             const allAuctionIds = [...new Set(events.data.map((e) => e.parsedJson.auction_id))];
 
+            if (allAuctionIds.length > 0) {
+                const auctionObjects = await client.multiGetObjects({
+                    ids: allAuctionIds,
+                    options: { showContent: true }
+                });
 
+                const participating = [];
+                const created = [];
+                const myAddr = currentAccount.address.toLowerCase();
 
-            const auctionDetails = await client.multiGetObjects({
+                auctionObjects.forEach((obj) => {
+                    const fields = obj.data?.content?.fields;
+                    if (!fields) return;
 
-                ids: allAuctionIds,
+                    const nftData = fields.nft?.fields;
+                    if (!nftData) return;
 
-                options: { showContent: true, showDisplay: true }
+                    const rawHighestBid = fields.highest_bid ? BigInt(fields.highest_bid) : 0n;
+                    const currentBidSui = Number(rawHighestBid) / 1_000_000_000;
 
-            });
+                    const item = {
+                        id: obj.data.objectId,
+                        name: parseSuiString(nftData.name || "Unnamed Item"),
+                        currentBid: currentBidSui.toLocaleString(undefined, { minimumFractionDigits: 2 }),
+                        image: getIPFSUrl(nftData.url),
+                        status: fields.active === true ? "LIVE" : "ENDED",
+                        seller: fields.seller,
+                        highest_bidder: fields.highest_bidder
+                    };
 
+                    // Classification
+                    if (item.seller.toLowerCase() === myAddr) {
+                        created.push(item);
+                    }
+                    if (item.status === "LIVE" && item.highest_bidder?.toLowerCase() === myAddr) {
+                        participating.push(item);
+                    }
+                });
 
+                setActiveBids(participating);
+                setCreatedAuctions(created);
+            }
 
-            const participating = [];
-
-            const createdMap = new Map();
-
-
-
-            auctionDetails.forEach((obj) => {
-
-                const processed = extractNFTData(obj);
-
-                if (!processed) return;
-
-                if (processed.seller === currentAccount.address) createdMap.set(processed.id, processed);
-
-                if (processed.status === "LIVE" && processed.highest_bidder === currentAccount.address) {
-
-                    participating.push(processed);
-
-                }
-
-            });
-
-
-
+            // 3. Fetch Owned NFT Collection
             const ownedNFTs = await client.getOwnedObjects({
-
                 owner: currentAccount.address,
-
-                filter: { StructType: `${PACKAGE_ID}::charity_auction::CharityNFT` },
-
-                options: { showContent: true, showDisplay: true }
-
+                filter: { StructType: `${PACKAGE_ID}::${MODULE_NAME}::CharityNFT` },
+                options: { showContent: true }
             });
 
-
-
-            const nfts = ownedNFTs.data.map((obj) => {
-
-                const f = obj.data.content.fields;
-
+            setMyNFTs(ownedNFTs.data.map(obj => {
+                const f = obj.data?.content?.fields;
                 return {
-
                     id: obj.data.objectId,
-
-                    name: (f.name || "Charity NFT").split('|')[0].trim(),
-
-                    image: getIPFSUrl(f.image_url || f.metadata || obj.data.display?.data?.image_url)
-
+                    name: parseSuiString(f?.name || "Charity NFT"),
+                    image: getIPFSUrl(f?.url)
                 };
-
-            });
-
-
-
-            setStats({ totalDonated: 0, itemsWon: nfts.length, balance: suiBalance });
-
-            setMyNFTs(nfts);
-
-            setActiveBids(participating);
-
-            setCreatedAuctions(Array.from(createdMap.values()));
+            }));
 
         } catch (error) {
-
             console.error("Profile Sync Error:", error);
-
-        } finally { setLoading(false); }
-
+        } finally {
+            setLoading(false);
+        }
     };
 
+    useEffect(() => {
+        fetchProfileData();
+    }, [currentAccount?.address, client]);
 
-
-    useEffect(() => { fetchProfileData(); }, [currentAccount?.address, client]);
-
-
-
-    if (!currentAccount) return (
-
-        <div className="min-h-screen bg-sui-dark flex flex-col items-center justify-center text-white p-6 relative overflow-hidden">
-
-            <div className="absolute w-125 h-125 bg-sui-cyan/5 blur-3xl rounded-full" />
-
-            <Wallet size={84} className="text-sui-cyan mb-8 animate-pulse relative z-10" />
-
-            <h2 className="text-2xl font-black uppercase italic tracking-widest relative z-10">Connect your wallet to continue</h2>
-
-        </div>
-
-    );
-
-
+    if (!currentAccount) return <ConnectWalletState />;
 
     return (
-
-        <div className="min-h-screen text-white pt-40 pb-20 px-10">
-
+        <div className="min-h-screen bg-[#F8F9FA] text-[#1F2937] pt-32 pb-20 px-6 font-sans">
             <div className="max-w-7xl mx-auto">
-
-                {/* HEADER */}
-
+                {/* Header Section */}
                 <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end mb-20 gap-10">
-
-                    <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }}>
-
-                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-sui-cyan/10 border border-sui-cyan/20 text-sui-cyan text-[10px] font-black uppercase tracking-widest mb-6">
-
-                            <Activity size={12} className="animate-pulse" />
-
-                            Live on Sui
-
+                    <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
+                        <div className="flex items-center gap-2 mb-4 bg-[#C1121F]/5 w-fit px-4 py-1.5 rounded-full border border-[#C1121F]/10 text-[#C1121F] text-[10px] font-black uppercase tracking-widest">
+                            <Activity size={12} className="animate-pulse" /> Network: Sui Mainnet
                         </div>
-
-                        <h1 className="text-8xl md:text-9xl font-black italic uppercase tracking-tighter leading-none mt-2">
-
-                            MY <span className="text-transparent bg-clip-text bg-linear-to-b from-sui-cyan to-sui-primary drop-shadow-2xl">STASH</span>
-
+                        <h1 className="text-7xl md:text-9xl font-black italic uppercase tracking-tighter leading-[0.8]">
+                            MY <span className="text-[#C1121F]">STASH</span>
                         </h1>
-
-                        <div className="flex items-center gap-3 mt-8 bg-white/5 border border-white/10 p-4 rounded-2xl w-fit backdrop-blur-xl group hover:border-sui-cyan/30 transition-colors">
-
-                            <div className="w-2 h-2 rounded-full bg-green-500 animate-ping" />
-
-                            <p className="font-mono text-[11px] text-white/50 tracking-tight">{currentAccount.address}</p>
-
-                        </div>
-
+                        <p className="mt-6 font-mono text-[10px] text-gray-400 bg-white px-4 py-2 rounded-xl border border-gray-100 w-fit shadow-sm">
+                            {currentAccount.address}
+                        </p>
                     </motion.div>
 
-
-
-                    <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-
-                        className="glass-card neon-border p-10 rounded-3xl min-w-75 text-center relative overflow-hidden group">
-
-                        <div className="absolute inset-0 bg-linear-to-br from-sui-cyan/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-
-                        <p className="text-[10px] font-black text-white/30 uppercase tracking-widest mb-3">Balance</p>
-
-                        <div className="flex justify-center items-baseline gap-2 relative z-10">
-
-                            <span className="text-6xl font-black italic text-sui-cyan drop-shadow-md">{stats.balance}</span>
-
-                            <span className="text-sm font-black text-white/40 italic uppercase">Sui</span>
-
+                    <div className="bg-white border border-gray-100 p-10 rounded-[40px] min-w-[300px] text-center shadow-xl shadow-gray-200/50">
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">Available Balance</p>
+                        <div className="flex justify-center items-baseline gap-2">
+                            <span className="text-6xl font-black italic text-[#1F2937]">{balance}</span>
+                            <span className="text-[#C1121F] font-black italic text-sm">SUI</span>
                         </div>
-
-                    </motion.div>
-
+                    </div>
                 </div>
 
-
-
-                {/* STATS */}
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-24">
-
-                    <StatCard icon={<Heart size={32} className="text-pink-500" />} label="Total Donations" value={`${stats.totalDonated} SUI`} />
-
-                    <StatCard icon={<PackagePlus size={32} className="text-sui-cyan" />} label="Sản phẩm đã tạo" value={createdAuctions.length} />
-
-                    <StatCard icon={<Zap size={32} className="text-white" />} label="Currently Leading" value={activeBids.length} highlight />
-
+                {/* Stats Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
+                    <StatCard icon={<Zap size={24} />} label="Leading Bids" value={activeBids.length} color="crimson" />
+                    <StatCard icon={<PackagePlus size={24} />} label="Items Listed" value={createdAuctions.length} color="slate" />
+                    <StatCard icon={<Heart size={24} />} label="NFT Collection" value={myNFTs.length} color="green" />
                 </div>
 
-
-
-                {/* TABS */}
-
-                <div className="flex gap-12 mb-16 border-b border-white/5 pb-8 overflow-x-auto no-scrollbar">
-
-                    {['bidding', 'created', 'inventory'].map((id) => (
-
-                        <button key={id} onClick={() => setActiveTab(id)}
-
-                            className={`text-xs font-black uppercase italic tracking-widest transition-all relative ${activeTab === id ? 'text-sui-cyan' : 'text-white/30 hover:text-white/60'}`}>
-
-                            {id === 'bidding' ? 'Auction in Progress' : id === 'created' ? 'Uploaded' : 'Artwork Collection'}
-
-                            {activeTab === id && (
-
-                                <motion.div layoutId="tab-active-bar" className="absolute -bottom-8.25 left-0 right-0 h-1 bg-sui-cyan shadow-lg shadow-sui-cyan/50" />
-
+                {/* Tabs */}
+                <div className="flex gap-12 mb-12 border-b border-gray-100">
+                    {[
+                        { id: 'bidding', label: 'Active Bids' },
+                        { id: 'created', label: 'My Listings' },
+                        { id: 'inventory', label: 'NFT Inventory' }
+                    ].map((tab) => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className={`pb-6 text-xs font-black uppercase italic tracking-widest relative transition-all ${activeTab === tab.id ? 'text-[#C1121F]' : 'text-gray-400 hover:text-gray-600'}`}
+                        >
+                            {tab.label}
+                            {activeTab === tab.id && (
+                                <motion.div layoutId="profileTab" className="absolute bottom-0 left-0 right-0 h-1 bg-[#C1121F] rounded-full shadow-[0_4px_12px_rgba(193,18,31,0.3)]" />
                             )}
-
                         </button>
-
                     ))}
-
                 </div>
 
-
-
-                {/* LISTING */}
-
+                {/* Content Grid */}
                 {loading ? (
-
-                    <div className="py-40 flex flex-col items-center gap-6">
-
-                        <Loader2 className="animate-spin text-sui-cyan" size={56} />
-
+                    <div className="py-40 flex flex-col items-center justify-center gap-4">
+                        <Loader2 className="animate-spin text-[#C1121F]" size={40} />
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Syncing Stash Data...</p>
                     </div>
-
                 ) : (
-
-                    <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
-
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                         <AnimatePresence mode="wait">
-
                             {activeTab === 'bidding' && (
-
-                                activeBids.length > 0 ? activeBids.map(item => <CardItem key={item.id} item={item} badge="LEADING" />) : <EmptyState msg="Bạn chưa dẫn đầu phiên nào" />
-
+                                activeBids.length > 0 ? activeBids.map(item => <ItemCard key={item.id} item={item} badge="LEADING" />) : <EmptyState msg="You are not leading any auctions" />
                             )}
-
                             {activeTab === 'created' && (
-
-                                createdAuctions.length > 0 ? createdAuctions.map(item => <CardItem key={item.id} item={item} badge={item.status} />) : <EmptyState msg="Bạn chưa tải lên vật phẩm nào" />
-
+                                createdAuctions.length > 0 ? createdAuctions.map(item => <ItemCard key={item.id} item={item} badge={item.status} />) : <EmptyState msg="No items listed for auction yet" />
                             )}
-
                             {activeTab === 'inventory' && (
-
-                                myNFTs.length > 0 ? myNFTs.map(nft => <CardItem key={nft.id} item={nft} type="NFT" />) : <EmptyState msg="Kho chứa đang trống" />
-
+                                myNFTs.length > 0 ? myNFTs.map(nft => <ItemCard key={nft.id} item={nft} isNFT />) : <EmptyState msg="Your NFT vault is currently empty" />
                             )}
-
                         </AnimatePresence>
-
-                    </motion.div>
-
+                    </div>
                 )}
-
             </div>
-
         </div>
-
     );
-
 }
 
+// --- SUB-COMPONENTS ---
 
-
-function CardItem({ item, badge, type }) {
-
+function StatCard({ icon, label, value, color }) {
+    const colorClass = color === 'crimson' ? 'text-[#C1121F]' : color === 'green' ? 'text-green-500' : 'text-[#1F2937]';
     return (
+        <div className="p-10 rounded-[40px] border border-gray-100 bg-white hover:border-[#C1121F]/20 transition-all group shadow-sm hover:shadow-xl hover:shadow-gray-200/50">
+            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-8 bg-gray-50 group-hover:scale-110 transition-transform ${colorClass}`}>
+                {icon}
+            </div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 italic">{label}</p>
+            <h3 className="text-5xl font-black italic mt-2 text-[#1F2937]">{value}</h3>
+        </div>
+    );
+}
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-
-            className="group glass-card p-6 rounded-[50px] border border-white/5 hover:border-sui-cyan/40 transition-all duration-500 relative overflow-hidden">
-
-            <div className="aspect-square rounded-[40px] overflow-hidden mb-6 bg-black relative shadow-inner">
-
-                <img src={item.image} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
-
-                    onError={(e) => { e.target.src = "https://placehold.jp/24/0a1120/ffffff/400x400.png?text=ERROR"; }} />
-
+function ItemCard({ item, badge, isNFT }) {
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="group bg-white border border-gray-100 p-5 rounded-[3.5rem] hover:border-[#C1121F]/20 transition-all shadow-sm hover:shadow-2xl hover:shadow-gray-200/60"
+        >
+            <div className="aspect-square rounded-[2.5rem] overflow-hidden mb-6 relative bg-gray-50">
+                <img src={item.image} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="" />
                 {badge && (
-
-                    <div className="absolute top-4 right-4 bg-sui-dark/80 backdrop-blur-md border border-white/10 px-3 py-1 rounded-full text-[8px] font-black text-sui-cyan tracking-widest uppercase italic">
-
+                    <div className="absolute top-4 right-4 px-4 py-1.5 bg-white/90 backdrop-blur-md rounded-full border border-gray-100 text-[9px] font-black text-[#C1121F] italic shadow-sm">
                         {badge}
-
                     </div>
-
                 )}
-
             </div>
 
-            <div className="px-2">
+            <h4 className="text-lg font-black italic uppercase truncate px-2 mb-5 text-[#1F2937]">{item.name}</h4>
 
-                <h4 className="text-xl font-black italic uppercase truncate mb-5 text-white group-hover:text-sui-cyan transition-colors">{item.name}</h4>
-
-                {type !== 'NFT' ? (
-
-                    <div className="flex justify-between items-center bg-white/5 rounded-[30px] p-5 border border-white/5 group-hover:bg-sui-cyan/10 transition-all">
-
-                        <div>
-
-                            <p className="text-[8px] font-black text-white/30 uppercase tracking-widest mb-1">Current Bid</p>
-
-                            <p className="text-2xl font-black italic text-sui-cyan tracking-tighter">{item.currentBid} <span className="text-[10px] text-white/40">SUI</span></p>
-
-                        </div>
-
-                        <Link to={`/item/${item.id}`} className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center hover:bg-sui-cyan text-white transition-all shadow-lg">
-
-                            <ExternalLink size={18} />
-
-                        </Link>
-
+            {!isNFT ? (
+                <div className="flex justify-between items-center p-4 bg-gray-50 rounded-3xl border border-gray-100">
+                    <div>
+                        <p className="text-[8px] font-black text-gray-400 uppercase tracking-tighter">Current Bid</p>
+                        <p className="text-xl font-black italic text-[#1F2937]">{item.currentBid} <span className="text-[10px] text-[#C1121F]">SUI</span></p>
                     </div>
-
-                ) : (
-
-                    <div className="flex items-center gap-3 py-3 px-5 bg-sui-cyan/5 rounded-full w-fit border border-sui-cyan/10">
-
-                        <ShieldCheck size={16} className="text-sui-cyan" />
-
-                        <span className="text-[9px] font-black uppercase tracking-widest text-sui-cyan/80">Verified</span>
-
-                    </div>
-
-                )}
-
-            </div>
-
+                    <Link to={`/item/${item.id}`} className="w-12 h-12 bg-[#1F2937] text-white rounded-2xl flex items-center justify-center hover:bg-[#C1121F] transition-all active:scale-90 shadow-lg">
+                        <ExternalLink size={18} />
+                    </Link>
+                </div>
+            ) : (
+                <div className="flex items-center gap-3 py-3 px-6 bg-green-50 rounded-full w-fit border border-green-100">
+                    <ShieldCheck size={16} className="text-green-500" />
+                    <span className="text-[10px] font-black uppercase text-green-600 tracking-widest">Verified Collection</span>
+                </div>
+            )}
         </motion.div>
-
     );
-
 }
 
-
-
-function StatCard({ icon, label, value, highlight }) {
-
+function ConnectWalletState() {
     return (
-
-        <div className={`p-12 rounded-[60px] border transition-all duration-500 relative overflow-hidden group ${highlight ? 'bg-sui-cyan border-transparent shadow-2xl shadow-sui-cyan/25' : 'bg-white/5 border-white/5 hover:border-white/10'}`}>
-
-            <div className={`mb-8 w-16 h-16 rounded-2xl flex items-center justify-center relative z-10 ${highlight ? 'bg-white/20' : 'bg-white/5'}`}>{icon}</div>
-
-            <p className={`text-[10px] font-black uppercase tracking-widest relative z-10 ${highlight ? 'text-white/80' : 'text-white/30'}`}>{label}</p>
-
-            <h2 className="text-5xl font-black italic mt-3 tracking-tighter relative z-10 text-white">{value}</h2>
-
+        <div className="min-h-screen bg-[#F8F9FA] flex flex-col items-center justify-center text-[#1F2937] p-6 font-sans">
+            <div className="w-28 h-28 bg-white shadow-2xl shadow-gray-200 rounded-[40px] flex items-center justify-center mb-10 border border-gray-100 animate-bounce">
+                <Wallet size={48} className="text-[#C1121F]" />
+            </div>
+            <h2 className="text-3xl font-black uppercase italic tracking-widest text-center">Connect Wallet to View Profile</h2>
+            <p className="text-gray-400 text-sm mt-4 font-bold uppercase tracking-widest">Please use Sui Wallet to access your stash</p>
         </div>
-
     );
-
 }
-
-
 
 function EmptyState({ msg }) {
-
     return (
-
-        <div className="col-span-full py-40 text-center bg-white/2 rounded-[80px] border-2 border-dashed border-white/5 backdrop-blur-sm">
-
-            <ImageOff size={64} className="mx-auto text-white/10 mb-8" />
-
-            <p className="text-white/20 text-lg font-black uppercase italic tracking-widest">{msg}</p>
-
+        <div className="col-span-full py-32 text-center border-2 border-dashed border-gray-100 rounded-[50px] bg-white/50">
+            <ImageOff size={48} className="mx-auto text-gray-200 mb-6" />
+            <p className="text-gray-300 font-black uppercase italic text-xs tracking-[0.3em]">{msg}</p>
         </div>
-
     );
-
 }

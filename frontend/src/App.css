@@ -1,97 +1,48 @@
-/* Thiết lập nền tảng chuẩn cho Web3 App */
 :root {
   --sui-cyan: #00D1FF;
-  --bg-dark: #050B18;
-  --card-bg: rgba(255, 255, 255, 0.05);
-  --border-white: rgba(255, 255, 255, 0.1);
-}
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+  --bg-dark: #020617; /* Sâu hơn so với #050B18 giúp dịu mắt */
+  --card-bg: rgba(255, 255, 255, 0.03);
+  --border-white: rgba(255, 255, 255, 0.08);
 }
 
 body {
   background-color: var(--bg-dark);
   color: white;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  overflow-x: hidden; /* Tránh lỗi tràn ngang trên mobile */
+  font-family: 'Inter', sans-serif;
+  background-image: radial-gradient(circle at 50% 0%, #0c1e3d 0%, var(--bg-dark) 50%);
 }
 
-/* Xóa bỏ giới hạn mặc định của Vite */
-#root {
-  width: 100%;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Container chuẩn cho mọi trang */
 .container {
-  width: 100%;
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0 1.25rem; /* 20px lề cho mobile */
+  padding: 0 1.5rem;
 }
 
-@media (min-width: 768px) {
-  .container {
-    padding: 0 2.5rem; /* 40px lề cho tablet/desktop */
-  }
-}
-
-/* Hệ thống Grid Responsive cho danh sách NFT/Đấu giá */
-.auction-grid {
-  display: grid;
-  gap: 1.5rem;
-  /* Mặc định 1 cột (Mobile) */
-  grid-template-columns: repeat(1, minmax(0, 1fr));
-  padding: 1.5rem 0;
-}
-
-/* Tablet (2 cột) */
-@media (min-width: 640px) {
-  .auction-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-/* Laptop (3 cột) */
-@media (min-width: 1024px) {
-  .auction-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-/* Desktop lớn (4 cột) */
-@media (min-width: 1280px) {
-  .auction-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
-
-/* Card vật phẩm đấu giá */
+/* Hiệu ứng Card bóng bẩy Web3 */
 .card-item {
   background: var(--card-bg);
   border: 1px solid var(--border-white);
-  border-radius: 1.5rem;
-  padding: 1rem;
-  transition: transform 0.3s ease;
+  border-radius: 2rem;
+  padding: 1.5rem;
+  backdrop-filter: blur(10px);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .card-item:hover {
-  transform: translateY(-5px);
+  transform: translateY(-8px);
   border-color: var(--sui-cyan);
+  box-shadow: 0 25px 50px -12px rgba(0, 209, 255, 0.15);
 }
 
-/* Utility classes cho Mobile ẩn/hiện */
-.hidden-mobile {
-  display: none;
-}
-
-@media (min-width: 1024px) {
-  .hidden-mobile {
-    display: block;
-  }
+/* Loading Screen đặc trưng */
+.loading-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-dark);
+  color: var(--sui-cyan);
+  font-weight: 900;
+  letter-spacing: 0.5em;
+  font-style: italic;
 }
