@@ -74,7 +74,7 @@ export default function CreateAuction() {
         };
         fetchVerifiedCharities();
     }, [events, suiClient]);
-
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://sui-charity-auction-v2.onrender.com';
     // --- LOGIC AI GENERATE (Giữ nguyên) ---
     const handleAIGenerate = async () => {
         if (!formData.name) return toast.error("Hãy nhập tên vật phẩm trước! 💙");
