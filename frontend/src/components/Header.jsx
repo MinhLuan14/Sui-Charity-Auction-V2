@@ -83,7 +83,7 @@ export default function Header({ scrolled }) {
         {/* LOGO: Fix màu đen rõ nét */}
         <Link to="/" className="flex flex-col group no-underline">
           <span className="text-xl md:text-2xl font-black italic tracking-tighter text-[#1F2937]">
-            SUI<span className="text-[#C1121F] drop-shadow-sm">CHARIAUCTION</span>
+            SUI<span className="text-[#C1121F] drop-shadow-sm">CHARITY</span>
           </span>
           <span className="text-[8px] font-bold text-gray-500 tracking-[0.4em] uppercase">Impact Protocol</span>
         </Link>
@@ -96,8 +96,8 @@ export default function Header({ scrolled }) {
               key={link.path}
               to={link.path}
               className={`relative px-4 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all rounded-xl flex items-center gap-2 no-underline ${location.pathname === link.path
-                  ? 'text-[#C1121F]'
-                  : 'text-gray-600 hover:text-[#1F2937]'
+                ? 'text-[#C1121F]'
+                : 'text-gray-600 hover:text-[#1F2937]'
                 }`}
             >
               {location.pathname === link.path && (
@@ -155,8 +155,8 @@ export default function Header({ scrolled }) {
                   to={link.path}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={`flex items-center gap-4 p-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all no-underline ${location.pathname === link.path
-                      ? 'bg-[#C1121F] text-white'
-                      : 'text-gray-600 hover:bg-gray-50'
+                    ? 'bg-[#C1121F] text-white'
+                    : 'text-gray-600 hover:bg-gray-50'
                     }`}
                 >
                   {link.icon} {link.label}

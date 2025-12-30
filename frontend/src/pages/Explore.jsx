@@ -108,8 +108,8 @@ export default function Explore() {
                                 <Sparkles size={14} /> Global Impact Protocol
                             </div>
                             <h1 className="text-7xl md:text-[90px] font-[1000] text-[#1F2937] leading-[0.8] mb-10 uppercase italic tracking-tighter">
-                                Auctions <br />
-                                <span className="text-[#C1121F]">For Change.</span>
+                                EXPLORE <br />
+                                <span className="text-[#C1121F]">MARKET</span>
                             </h1>
 
                             <div className="relative max-w-xl group">
@@ -141,7 +141,7 @@ export default function Explore() {
 
                             <div className="flex items-center gap-3 mb-10">
                                 <Trophy size={24} className="text-[#F39C12]" />
-                                <h3 className="font-black uppercase italic text-[#1F2937] tracking-tight text-2xl">Kỳ tích cộng đồng</h3>
+                                <h3 className="font-black uppercase italic text-[#1F2937] tracking-tight text-2xl">Community achievement</h3>
                             </div>
 
                             <div className="space-y-5">
@@ -163,7 +163,7 @@ export default function Explore() {
                             </div>
 
                             <div className="mt-10 pt-8 border-t border-dashed border-gray-100 flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
-                                <span className="text-gray-400">Hiệu quả on-chain</span>
+                                <span className="text-gray-400">On-chain efficiency </span>
                                 <span className="text-[#2ECC71]">+100% Transparency</span>
                             </div>
                         </motion.div>

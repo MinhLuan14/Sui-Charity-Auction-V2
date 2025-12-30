@@ -155,14 +155,15 @@ export default function Home() {
                                 initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }}
                                 className="text-6xl md:text-[7.5rem] font-[1000] leading-[0.85] tracking-tighter text-[#1F2937] uppercase"
                             >
-                                Impact <br />
+                                GIVING IS <br />
                                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#C1121F] via-[#F77F00] to-[#C1121F] bg-[length:200%_auto] animate-gradient italic">
-                                    Realized.
+                                    LIVING
                                 </span>
                             </motion.h1>
 
                             <p className="text-lg md:text-xl text-gray-500 font-medium max-w-xl leading-relaxed">
-                                A <span className="text-[#1F2937] font-bold underline decoration-[#2ECC71] decoration-4">decentralized</span> donation platform ensuring 100% transparency for charitable flows on the Blockchain.
+                                An <span className="text-[#1F2937] font-bold underline decoration-[#2ECC71] decoration-4">NFT Auction for Charity</span> Transparency on-Sui.
+                                All contributions are permanently recorded and delivered directly to those in need
                             </p>
 
                             <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
@@ -322,10 +323,10 @@ export default function Home() {
                             </div>
                         </div>
                         <div className="mt-20 pt-8 border-t border-gray-50 flex flex-col md:flex-row justify-between items-center gap-4">
-                            <p className="text-[10px] font-black text-gray-300 uppercase tracking-[0.3em]">© 2025 IMPACT PROTOCOL • SUI NETWORK</p>
+                            <p className="text-[10px] font-black text-gray-300 uppercase tracking-[0.3em]">© 2025 IMPACT PROTOCOL • SUI NETWORK & THREEHUB</p>
                             <div className="flex items-center gap-2 px-4 py-1.5 bg-[#2ECC71]/5 rounded-full border border-[#2ECC71]/10">
                                 <div className="w-2 h-2 rounded-full bg-[#2ECC71] animate-pulse" />
-                                <span className="text-[9px] font-black text-[#2ECC71] uppercase tracking-tighter">Mainnet Connected</span>
+                                <span className="text-[9px] font-black text-[#2ECC71] uppercase tracking-tighter">Testnet Connected</span>
                             </div>
                         </div>
                     </div>
