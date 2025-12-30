@@ -123,9 +123,9 @@ export default function Home() {
     }, [events, suiClient]);
 
     const stats = [
-        { label: "Tổng quyên góp", value: "128,450", unit: "SUI", icon: <TrendingUp size={22} />, color: "text-[#2ECC71]", bg: "bg-[#2ECC71]/10" },
-        { label: "Nhà hảo tâm", value: "2,840", unit: "USERS", icon: <Users size={22} />, color: "text-[#C1121F]", bg: "bg-[#C1121F]/10" },
-        { label: "Dự án thành công", value: "142", unit: "DONE", icon: <Trophy size={22} />, color: "text-[#F77F00]", bg: "bg-[#F77F00]/10" }
+        { label: "Total Donations", value: "128,450", unit: "SUI", icon: <TrendingUp size={22} />, color: "text-[#2ECC71]", bg: "bg-[#2ECC71]/10" },
+        { label: "Global Donors", value: "2,840", unit: "USERS", icon: <Users size={22} />, color: "text-[#C1121F]", bg: "bg-[#C1121F]/10" },
+        { label: "Successful Projects", value: "142", unit: "DONE", icon: <Trophy size={22} />, color: "text-[#F77F00]", bg: "bg-[#F77F00]/10" }
     ];
 
     return (
@@ -162,20 +162,20 @@ export default function Home() {
                             </motion.h1>
 
                             <p className="text-lg md:text-xl text-gray-500 font-medium max-w-xl leading-relaxed">
-                                Nền tảng quyên góp <span className="text-[#1F2937] font-bold underline decoration-[#2ECC71] decoration-4">phi tập trung</span> giúp minh bạch hóa 100% dòng tiền thiện nguyện trên Blockchain.
+                                A <span className="text-[#1F2937] font-bold underline decoration-[#2ECC71] decoration-4">decentralized</span> donation platform ensuring 100% transparency for charitable flows on the Blockchain.
                             </p>
 
                             <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
                                 <Link to="/explore" className="px-10 py-5 bg-[#C1121F] text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-[0_20px_40px_-12px_rgba(193,18,31,0.3)] hover:scale-105 transition-all active:scale-95 flex items-center gap-3">
-                                    Quyên góp ngay <ArrowRight size={18} />
+                                    Donate Now <ArrowRight size={18} />
                                 </Link>
                                 <Link to="/register-charity" className="px-10 py-5 bg-white text-[#1F2937] border-2 border-gray-200 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-gray-50 transition-all shadow-sm">
-                                    Tạo quỹ của bạn
+                                    Create Your Fund
                                 </Link>
                             </div>
                         </div>
 
-                        {/* Right Content: DỰ ÁN THÀNH CÔNG */}
+                        {/* Right Content: SUCCESS PROJECTS */}
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
                             className="flex-1 relative w-full max-w-[500px]"
@@ -184,7 +184,7 @@ export default function Home() {
                                 <div className="flex items-center justify-between mb-8 border-b border-gray-100 pb-4">
                                     <div className="flex items-center gap-2">
                                         <Trophy size={18} className="text-[#F77F00]" />
-                                        <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#1F2937]">Kỳ tích cộng đồng</h3>
+                                        <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#1F2937]">Community Impact</h3>
                                     </div>
                                     <div className="flex gap-1.5">
                                         <div className="w-2 h-2 rounded-full bg-red-400" />
@@ -194,20 +194,20 @@ export default function Home() {
                                 </div>
 
                                 <div className="space-y-4">
-                                    <SuccessProjectCard title="Áo ấm vùng cao 2024" amount="45,000" date="Đã hoàn thành" color="bg-[#2ECC71]" delay={0.1} />
-                                    <SuccessProjectCard title="Xây cầu từ thiện Kiên Giang" amount="120,500" date="Đã giải ngân" color="bg-[#C1121F]" delay={0.2} />
-                                    <SuccessProjectCard title="Hỗ trợ nước sạch miền Tây" amount="32,800" date="Đã nghiệm thu" color="bg-[#F77F00]" delay={0.3} />
+                                    <SuccessProjectCard title="Winter Warmth 2024" amount="45,000" date="Completed" color="bg-[#2ECC71]" delay={0.1} />
+                                    <SuccessProjectCard title="Rural Bridge Construction" amount="120,500" date="Disbursed" color="bg-[#C1121F]" delay={0.2} />
+                                    <SuccessProjectCard title="Clean Water Support" amount="32,800" date="Verified" color="bg-[#F77F00]" delay={0.3} />
                                 </div>
 
                                 <div className="mt-8 pt-6 border-t border-dashed border-gray-200">
                                     <div className="flex justify-between items-center px-2">
-                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Hiệu quả on-chain</span>
+                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">On-chain Efficiency</span>
                                         <span className="text-xs font-black text-[#2ECC71]">+100% Transparency</span>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Trang trí phía sau */}
+                            {/* Decorative elements */}
                             <div className="absolute -top-6 -right-6 w-full h-full bg-[#C1121F]/5 rounded-[3rem] -z-10 rotate-3 transition-transform hover:rotate-0 duration-700" />
                             <div className="absolute -bottom-6 -left-6 w-full h-full bg-[#2ECC71]/5 rounded-[3rem] -z-10 -rotate-2" />
                         </motion.div>
@@ -228,11 +228,11 @@ export default function Home() {
                                 <span className="font-black uppercase tracking-[0.3em] text-[10px]">Real-time Funding</span>
                             </div>
                             <h2 className="text-5xl md:text-6xl font-[1000] text-[#1F2937] uppercase tracking-tighter leading-none">
-                                Dự án <span className="text-[#C1121F]">Đang Gây Quỹ</span>
+                                Active <span className="text-[#C1121F]">Campaigns</span>
                             </h2>
                         </div>
                         <Link to="/explore" className="group flex items-center gap-3 text-[#1F2937]/40 font-black uppercase text-[10px] tracking-widest hover:text-[#C1121F] transition-all pb-2">
-                            Xem tất cả <ArrowRight size={14} className="group-hover:translate-x-2 transition-transform" />
+                            View All <ArrowRight size={14} className="group-hover:translate-x-2 transition-transform" />
                         </Link>
                     </div>
 
@@ -259,7 +259,7 @@ export default function Home() {
                                                 <img src={campaign.displayLogo} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt={campaign.name} />
                                                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-8">
                                                     <span className="text-white text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-                                                        <Heart size={14} fill="currentColor" /> Quyên góp ngay
+                                                        <Heart size={14} fill="currentColor" /> Donate Now
                                                     </span>
                                                 </div>
                                                 {campaign.is_verified && (
@@ -276,7 +276,7 @@ export default function Home() {
                                                 <div className="mt-auto space-y-6">
                                                     <div className="flex justify-between items-end">
                                                         <div className="flex flex-col">
-                                                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Cộng đồng đã góp</span>
+                                                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Community Raised</span>
                                                             <span className="text-2xl font-[1000] text-[#1F2937] tracking-tighter">
                                                                 {campaign.vault.toLocaleString()} <span className="text-xs text-[#2ECC71] font-black">SUI</span>
                                                             </span>
@@ -294,7 +294,7 @@ export default function Home() {
                                                     </div>
 
                                                     <Link to={`/campaign/${campaign.id}`} className="flex items-center justify-center w-full py-5 bg-[#1F2937] text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-[#C1121F] hover:shadow-lg hover:shadow-[#C1121F]/20 transition-all active:scale-95">
-                                                        Theo dõi dòng tiền
+                                                        Track Fund Flow
                                                     </Link>
                                                 </div>
                                             </div>
@@ -313,7 +313,7 @@ export default function Home() {
                             <div className="max-w-sm">
                                 <h4 className="text-[#C1121F] font-black text-3xl uppercase italic tracking-tighter mb-4">SuiCharity</h4>
                                 <p className="text-gray-400 text-sm font-medium leading-relaxed">
-                                    Minh bạch hóa thiện nguyện bằng sức mạnh của Blockchain SUI. Nơi mỗi giọt lòng tốt đều được ghi nhận vĩnh viễn.
+                                    Empowering philanthropy through the transparency of Sui Blockchain. Where every drop of kindness is permanently recorded.
                                 </p>
                             </div>
                             <div className="flex gap-4">
